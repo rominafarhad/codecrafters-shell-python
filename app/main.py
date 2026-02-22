@@ -1,31 +1,42 @@
 import sys
 import os
 import subprocess
+import shlex
 
 def main():
-    builtins = ["exit", "echo", "type", "cd"]
+    builtins = ["exit", "echo", "type", "cd", "pwd"]
 
     while True:
         sys.stdout.write("$ ")
         sys.stdout.flush()
         
         command_input = input()
-        parts = command_input.split()
+        
+        # NEW: Use shlex to correctly split commands with spaces in quotes
+        try:
+            parts = shlex.split(command_input)
+        except ValueError:
+            continue
+            
         if not parts:
             continue
             
         command = parts[0]
         args = parts[1:]
 
-        # 1. Handle 'exit 0'
+        # Handle 'exit'
         if command == "exit" and args == ["0"]:
             sys.exit(0)
         
-        # 2. Handle 'echo'
+        # Handle 'echo'
         elif command == "echo":
             print(" ".join(args))
             
-        # 3. Handle 'type'
+        # Handle 'pwd' (helpful addition)
+        elif command == "pwd":
+            print(os.getcwd())
+
+        # Handle 'type'
         elif command == "type":
             cmd_name = args[0]
             if cmd_name in builtins:
@@ -42,19 +53,17 @@ def main():
                 if not found:
                     print(f"{cmd_name}: not found")
         
-        # 4. Handle 'cd' (New Stage 7)
+        # Handle 'cd'
         elif command == "cd":
             path = args[0] if args else "~"
-            # Handle the '~' for home directory
             if path == "~":
                 path = os.path.expanduser("~")
-            
             try:
                 os.chdir(path)
             except FileNotFoundError:
                 print(f"cd: {path}: No such file or directory")
 
-        # 5. Handle external program execution
+        # Handle external programs
         else:
             path_env = os.environ.get("PATH", "")
             found = False
@@ -64,7 +73,6 @@ def main():
                     subprocess.run([full_path] + args)
                     found = True
                     break
-            
             if not found:
                 print(f"{command}: command not found")
 
