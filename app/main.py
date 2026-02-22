@@ -13,7 +13,6 @@ def find_in_path(command):
     return None
 
 def main():
-    # Added 'cd' to builtins
     builtins = ["exit", "echo", "type", "pwd", "cd"]
 
     while True:
@@ -41,15 +40,14 @@ def main():
         elif command == "pwd":
             print(os.getcwd())
 
-        # Handle 'cd' command
         elif command == "cd":
             if args:
                 path = args[0]
+                # Handle relative and absolute paths
                 try:
-                    # os.chdir changes the current directory for the shell process
+                    # os.chdir naturally understands '.', '..', and relative names
                     os.chdir(path)
-                except FileNotFoundError:
-                    # Error format must match exactly what the tester expects
+                except (FileNotFoundError, NotADirectoryError):
                     print(f"cd: {path}: No such file or directory")
             
         elif command == "type":
