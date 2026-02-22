@@ -1,7 +1,8 @@
 import sys
+import os
 
 def main():
-    # List of built-in commands supported by our shell
+    # List of shell built-in commands
     builtins = ["exit", "echo", "type"]
 
     while True:
@@ -9,24 +10,41 @@ def main():
         sys.stdout.flush()
         
         command_input = input()
+        parts = command_input.split()
+        if not parts:
+            continue
+            
+        command = parts[0]
+        args = parts[1:]
 
-        # Handle 'exit 0'
-        if command_input == "exit 0":
+        # 1. Handle 'exit 0'
+        if command == "exit" and args == ["0"]:
             sys.exit(0)
         
-        # Handle 'echo'
-        elif command_input.startswith("echo "):
-            print(command_input[5:])
+        # 2. Handle 'echo'
+        elif command == "echo":
+            print(" ".join(args))
             
-        # Handle 'type' (New Stage)
-        elif command_input.startswith("type "):
-            cmd_name = command_input[5:]
+        # 3. Handle 'type'
+        elif command == "type":
+            cmd_name = args[0]
             if cmd_name in builtins:
                 print(f"{cmd_name} is a shell builtin")
             else:
-                print(f"{cmd_name}: not found")
+                # Look for the command in the PATH environment variable
+                path_env = os.environ.get("PATH", "")
+                found = False
+                for path in path_env.split(os.pathsep):
+                    full_path = os.path.join(path, cmd_name)
+                    if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+                        print(f"{cmd_name} is {full_path}")
+                        found = True
+                        break
+                if not found:
+                    print(f"{cmd_name}: not found")
                 
         else:
+            # Handle unknown commands
             print(f"{command_input}: command not found")
 
 if __name__ == "__main__":
