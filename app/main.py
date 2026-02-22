@@ -1,6 +1,9 @@
 import sys
 
 def main():
+    # List of built-in commands we have implemented so far
+    builtins = ["exit", "echo", "type"]
+
     while True:
         sys.stdout.write("$ ")
         sys.stdout.flush()
@@ -10,10 +13,7 @@ def main():
         except EOFError:
             break
 
-        # Split the input into parts (command and arguments)
-        # Example: "echo hello world" -> ["echo", "hello", "world"]
         parts = command_input.split()
-        
         if not parts:
             continue
 
@@ -26,8 +26,14 @@ def main():
         
         # Handle 'echo' command
         elif command == "echo":
-            # Print all arguments joined by a single space
             print(" ".join(args))
+
+        # Handle 'type' command
+        elif command == "type":
+            if args[0] in builtins:
+                print(f"{args[0]} is a shell builtin")
+            else:
+                print(f"{args[0]}: not found")
             
         # Handle unknown commands
         else:
