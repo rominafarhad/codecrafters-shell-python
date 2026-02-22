@@ -4,18 +4,22 @@ import subprocess
 import shlex
 
 def main():
+    # Adding 'pwd' to builtins as we'll use it often
     builtins = ["exit", "echo", "type", "cd", "pwd"]
 
     while True:
         sys.stdout.write("$ ")
         sys.stdout.flush()
         
-        command_input = input()
-        
-        # NEW: Use shlex to correctly split commands with spaces in quotes
         try:
+            command_input = input()
+            # shlex.split handles single and double quotes automatically!
             parts = shlex.split(command_input)
-        except ValueError:
+        except EOFError:
+            break
+        except ValueError as e:
+            # Handle cases where quotes are not closed
+            print(f"shell: {e}")
             continue
             
         if not parts:
@@ -24,19 +28,19 @@ def main():
         command = parts[0]
         args = parts[1:]
 
-        # Handle 'exit'
+        # 1. Exit command
         if command == "exit" and args == ["0"]:
             sys.exit(0)
         
-        # Handle 'echo'
+        # 2. Echo command (shlex handles the quotes, we just join args)
         elif command == "echo":
             print(" ".join(args))
             
-        # Handle 'pwd' (helpful addition)
+        # 3. PWD command
         elif command == "pwd":
             print(os.getcwd())
 
-        # Handle 'type'
+        # 4. Type command
         elif command == "type":
             cmd_name = args[0]
             if cmd_name in builtins:
@@ -53,17 +57,17 @@ def main():
                 if not found:
                     print(f"{cmd_name}: not found")
         
-        # Handle 'cd'
+        # 5. CD command
         elif command == "cd":
             path = args[0] if args else "~"
             if path == "~":
                 path = os.path.expanduser("~")
             try:
                 os.chdir(path)
-            except FileNotFoundError:
-                print(f"cd: {path}: No such file or directory")
+            except Exception as e:
+                print(f"cd: {args[0]}: No such file or directory")
 
-        # Handle external programs
+        # 6. External Programs
         else:
             path_env = os.environ.get("PATH", "")
             found = False
