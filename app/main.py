@@ -1,5 +1,17 @@
 import sys
 import os
+import subprocess
+
+def find_in_path(command):
+    # Search for the command in the directories listed in the PATH environment variable
+    path_env = os.environ.get("PATH")
+    if path_env:
+        directories = path_env.split(os.pathsep)
+        for directory in directories:
+            full_path = os.path.join(directory, command)
+            if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+                return full_path
+    return None
 
 def main():
     builtins = ["exit", "echo", "type"]
@@ -20,39 +32,35 @@ def main():
         command = parts[0]
         args = parts[1:]
 
+        # 1. Handle Builtin: exit
         if command == "exit":
             sys.exit(0)
         
+        # 2. Handle Builtin: echo
         elif command == "echo":
             print(" ".join(args))
 
+        # 3. Handle Builtin: type
         elif command == "type":
             target = args[0]
-            
-            # 1. Check if it's a builtin
             if target in builtins:
                 print(f"{target} is a shell builtin")
             else:
-                # 2. Search in PATH
-                path_env = os.environ.get("PATH")
-                found = False
-                
-                if path_env:
-                    # Split PATH by the OS-specific separator (usually ':')
-                    directories = path_env.split(os.pathsep)
-                    for directory in directories:
-                        full_path = os.path.join(directory, target)
-                        # Check if file exists and is executable
-                        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
-                            print(f"{target} is {full_path}")
-                            found = True
-                            break
-                
-                if not found:
+                full_path = find_in_path(target)
+                if full_path:
+                    print(f"{target} is {full_path}")
+                else:
                     print(f"{target}: not found")
-            
+        
+        # 4. Handle External Programs
         else:
-            print(f"{command_input}: command not found")
+            full_path = find_in_path(command)
+            if full_path:
+                # Use subprocess.run to execute the external program and pass arguments
+                # The first element of the list must be the program name/path
+                subprocess.run([command] + args)
+            else:
+                print(f"{command}: command not found")
 
 if __name__ == "__main__":
     main()
