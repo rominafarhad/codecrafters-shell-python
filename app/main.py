@@ -3,7 +3,7 @@ import os
 import subprocess
 
 def main():
-    builtins = ["exit", "echo", "type"]
+    builtins = ["exit", "echo", "type", "cd"]
 
     while True:
         sys.stdout.write("$ ")
@@ -17,15 +17,15 @@ def main():
         command = parts[0]
         args = parts[1:]
 
-        # Handle 'exit 0'
+        # 1. Handle 'exit 0'
         if command == "exit" and args == ["0"]:
             sys.exit(0)
         
-        # Handle 'echo'
+        # 2. Handle 'echo'
         elif command == "echo":
             print(" ".join(args))
             
-        # Handle 'type'
+        # 3. Handle 'type'
         elif command == "type":
             cmd_name = args[0]
             if cmd_name in builtins:
@@ -42,14 +42,25 @@ def main():
                 if not found:
                     print(f"{cmd_name}: not found")
         
-        # NEW: Handle external program execution (Stage 6)
+        # 4. Handle 'cd' (New Stage 7)
+        elif command == "cd":
+            path = args[0] if args else "~"
+            # Handle the '~' for home directory
+            if path == "~":
+                path = os.path.expanduser("~")
+            
+            try:
+                os.chdir(path)
+            except FileNotFoundError:
+                print(f"cd: {path}: No such file or directory")
+
+        # 5. Handle external program execution
         else:
             path_env = os.environ.get("PATH", "")
             found = False
             for path in path_env.split(os.pathsep):
                 full_path = os.path.join(path, command)
                 if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
-                    # Execute the program with its arguments
                     subprocess.run([full_path] + args)
                     found = True
                     break
