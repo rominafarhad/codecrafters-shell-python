@@ -1,6 +1,9 @@
 import sys
 
 def main():
+    # List of commands that are built into our shell
+    builtins = ["exit", "echo", "type"]
+
     while True:
         sys.stdout.write("$ ")
         sys.stdout.flush()
@@ -13,19 +16,24 @@ def main():
         if not user_input:
             continue
 
-        # Split the input into command and arguments
-        # Example: "echo hello world" -> ["echo", "hello", "world"]
         parts = user_input.split()
         command = parts[0]
         args = parts[1:]
 
+        # Handle 'exit 0'
         if command == "exit" and args == ["0"]:
             sys.exit(0)
         
-        # New Feature: Handle the 'echo' command
+        # Handle 'echo'
         elif command == "echo":
-            # Join the arguments back with a space and print
             print(" ".join(args))
+
+        # Handle 'type'
+        elif command == "type":
+            if args[0] in builtins:
+                print(f"{args[0]} is a shell builtin")
+            else:
+                print(f"{args[0]}: not found")
             
         else:
             print(f"{user_input}: command not found")
