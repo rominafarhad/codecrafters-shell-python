@@ -3,7 +3,6 @@ import os
 import subprocess
 
 def find_in_path(command):
-    # Search for the command in the directories listed in the PATH environment variable
     path_env = os.environ.get("PATH")
     if path_env:
         directories = path_env.split(os.pathsep)
@@ -14,7 +13,8 @@ def find_in_path(command):
     return None
 
 def main():
-    builtins = ["exit", "echo", "type"]
+    # Add 'pwd' to the list of builtins
+    builtins = ["exit", "echo", "type", "pwd"]
 
     while True:
         sys.stdout.write("$ ")
@@ -32,15 +32,16 @@ def main():
         command = parts[0]
         args = parts[1:]
 
-        # 1. Handle Builtin: exit
         if command == "exit":
             sys.exit(0)
         
-        # 2. Handle Builtin: echo
         elif command == "echo":
             print(" ".join(args))
 
-        # 3. Handle Builtin: type
+        elif command == "pwd":
+            # Use os.getcwd() to get the current absolute path
+            print(os.getcwd())
+
         elif command == "type":
             target = args[0]
             if target in builtins:
@@ -52,12 +53,9 @@ def main():
                 else:
                     print(f"{target}: not found")
         
-        # 4. Handle External Programs
         else:
             full_path = find_in_path(command)
             if full_path:
-                # Use subprocess.run to execute the external program and pass arguments
-                # The first element of the list must be the program name/path
                 subprocess.run([command] + args)
             else:
                 print(f"{command}: command not found")
