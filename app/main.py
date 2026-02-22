@@ -1,7 +1,7 @@
 import sys
+import os
 
 def main():
-    # List of commands that are built into our shell
     builtins = ["exit", "echo", "type"]
 
     while True:
@@ -20,20 +20,28 @@ def main():
         command = parts[0]
         args = parts[1:]
 
-        # Handle 'exit 0'
         if command == "exit" and args == ["0"]:
             sys.exit(0)
         
-        # Handle 'echo'
         elif command == "echo":
             print(" ".join(args))
 
-        # Handle 'type'
         elif command == "type":
-            if args[0] in builtins:
-                print(f"{args[0]} is a shell builtin")
+            cmd_to_check = args[0]
+            if cmd_to_check in builtins:
+                print(f"{cmd_to_check} is a shell builtin")
             else:
-                print(f"{args[0]}: not found")
+                # Search for the command in the PATH environment variable
+                path_env = os.environ.get("PATH")
+                found = False
+                for path in path_env.split(":"):
+                    full_path = os.path.join(path, cmd_to_check)
+                    if os.path.isfile(full_path):
+                        print(f"{cmd_to_check} is {full_path}")
+                        found = True
+                        break
+                if not found:
+                    print(f"{cmd_to_check}: not found")
             
         else:
             print(f"{user_input}: command not found")
