@@ -1,21 +1,24 @@
 import sys
 
 def main():
-    # Loop forever to keep the shell active
+    # REPL: Read-Eval-Print Loop
     while True:
-        # Display the prompt for the user
+        # 1. READ: Display prompt and wait for input
+        # Using write and flush to ensure '$ ' appears without a newline
         sys.stdout.write("$ ")
         sys.stdout.flush()
 
-        # Wait for user input
-        command = input()
+        try:
+            command = input()
+        except EOFError:
+            break # Exit if the input stream is closed
 
-        # Handle the 'exit 0' command specifically
-        if command == "exit 0":
-            sys.exit(0)
-        # For any other command, show the 'not found' message
-        elif command:
+        # 2. EVAL & 3. PRINT:
+        # Since we are in the early stages, every command is "not found"
+        if command:
             print(f"{command}: command not found")
-
+        
+        # 4. LOOP: The 'while True' handles the looping back to Step 1
+        
 if __name__ == "__main__":
     main()
