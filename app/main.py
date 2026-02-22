@@ -13,8 +13,8 @@ def find_in_path(command):
     return None
 
 def main():
-    # Add 'pwd' to the list of builtins
-    builtins = ["exit", "echo", "type", "pwd"]
+    # Added 'cd' to builtins
+    builtins = ["exit", "echo", "type", "pwd", "cd"]
 
     while True:
         sys.stdout.write("$ ")
@@ -39,9 +39,19 @@ def main():
             print(" ".join(args))
 
         elif command == "pwd":
-            # Use os.getcwd() to get the current absolute path
             print(os.getcwd())
 
+        # Handle 'cd' command
+        elif command == "cd":
+            if args:
+                path = args[0]
+                try:
+                    # os.chdir changes the current directory for the shell process
+                    os.chdir(path)
+                except FileNotFoundError:
+                    # Error format must match exactly what the tester expects
+                    print(f"cd: {path}: No such file or directory")
+            
         elif command == "type":
             target = args[0]
             if target in builtins:
