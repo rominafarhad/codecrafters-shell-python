@@ -4,7 +4,6 @@ import subprocess
 import shlex
 
 def main():
-    # Adding 'pwd' to builtins as we'll use it often
     builtins = ["exit", "echo", "type", "cd", "pwd"]
 
     while True:
@@ -13,12 +12,11 @@ def main():
         
         try:
             command_input = input()
-            # shlex.split handles single and double quotes automatically!
+            # Use shlex.split to handle complex quoting and backslashes
             parts = shlex.split(command_input)
         except EOFError:
             break
         except ValueError as e:
-            # Handle cases where quotes are not closed
             print(f"shell: {e}")
             continue
             
@@ -28,19 +26,20 @@ def main():
         command = parts[0]
         args = parts[1:]
 
-        # 1. Exit command
+        # Handle 'exit'
         if command == "exit" and args == ["0"]:
             sys.exit(0)
         
-        # 2. Echo command (shlex handles the quotes, we just join args)
+        # Handle 'echo'
         elif command == "echo":
+            # shlex handles the parsing, we just join with single space
             print(" ".join(args))
             
-        # 3. PWD command
+        # Handle 'pwd'
         elif command == "pwd":
             print(os.getcwd())
 
-        # 4. Type command
+        # Handle 'type'
         elif command == "type":
             cmd_name = args[0]
             if cmd_name in builtins:
@@ -57,17 +56,17 @@ def main():
                 if not found:
                     print(f"{cmd_name}: not found")
         
-        # 5. CD command
+        # Handle 'cd'
         elif command == "cd":
             path = args[0] if args else "~"
             if path == "~":
                 path = os.path.expanduser("~")
             try:
                 os.chdir(path)
-            except Exception as e:
+            except Exception:
                 print(f"cd: {args[0]}: No such file or directory")
 
-        # 6. External Programs
+        # Handle External Programs
         else:
             path_env = os.environ.get("PATH", "")
             found = False
