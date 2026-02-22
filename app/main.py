@@ -1,17 +1,19 @@
 import sys
 
 def main():
+    # Loop forever to keep the shell active
     while True:
+        # Display the prompt for the user
         sys.stdout.write("$ ")
         sys.stdout.flush()
 
         # Wait for user input
         command = input()
 
-        # Check if the command is 'exit 0'
+        # Handle the 'exit 0' command specifically
         if command == "exit 0":
             sys.exit(0)
-        # If it's any other command, show error
+        # For any other command, show the 'not found' message
         elif command:
             print(f"{command}: command not found")
 
